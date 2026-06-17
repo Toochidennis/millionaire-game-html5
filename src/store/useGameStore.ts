@@ -4,6 +4,7 @@ import { LADDER, TOP_RUNG, safeHavenFloor } from "@/lib/money";
 import { buildMatch } from "@/lib/questions";
 import { hostLine } from "@/lib/host";
 import { sfx } from "@/lib/audio";
+import i18n from "@/lib/i18n";
 
 const QUESTION_TIME = 30;
 
@@ -126,11 +127,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
         get().proceed();
         return;
       case "askAi":
-        // In prod: stream Claude's reasoning. Here: confident nudge.
-        set({ hostMessage: `${hostLine(hostVoice, "intro")} My read: option ${"ABCD"[q.correct]} looks strongest.`, lifelines: next });
+        set({ hostMessage: `${hostLine(hostVoice, "intro")} ${i18n.t("game_host_ai", { letter: "ABCD"[q.correct] })}`, lifelines: next });
         break;
       case "crowdVote":
-        set({ hostMessage: "The crowd is leaning heavily toward one answer…", lifelines: next });
+        set({ hostMessage: i18n.t("game_host_crowd"), lifelines: next });
         break;
     }
   },

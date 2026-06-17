@@ -18,11 +18,11 @@ export function Profile() {
 
   return (
     <PageTransition>
-      <GlassCard glow="violet" hi className="flex items-center gap-4 mb-6">
-        <span className="grid h-20 w-20 place-items-center rounded-full bg-gradient-to-br from-cyan to-violet text-3xl">{p.avatar}</span>
-        <div>
-          <h1 className="display text-2xl font-bold">{p.name}</h1>
-          <p className="text-muted text-sm">
+      <GlassCard glow="violet" hi className="flex items-center gap-4 mb-6 overflow-hidden">
+        <span className="grid h-20 w-20 shrink-0 place-items-center rounded-full bg-gradient-to-br from-cyan to-violet text-3xl">{p.avatar}</span>
+        <div className="min-w-0 flex-1">
+          <h1 className="display text-2xl font-bold break-words leading-tight">{p.name}</h1>
+          <p className="text-muted text-sm break-words mt-0.5">
             {p.countryCode} · {t("prof_level", { n: p.stats.level })} · {p.guest ? t("prof_guest") : t("prof_member")}
           </p>
         </div>
@@ -36,9 +36,10 @@ export function Profile() {
       </div>
 
       <button onClick={() => nav("/achievements")} className="w-full mb-3">
-        <GlassCard className="flex items-center gap-3"><Award className="text-gold" />
-          <span>{t("prof_achievements")}</span>
-          <span className="ml-auto nums text-muted">{unlocked}/{p.achievements.length}</span>
+        <GlassCard className="flex items-center gap-3 overflow-hidden">
+          <Award className="text-gold shrink-0" />
+          <span className="min-w-0 flex-1 break-words text-start">{t("prof_achievements")}</span>
+          <span className="ms-auto nums text-muted shrink-0">{unlocked}/{p.achievements.length}</span>
         </GlassCard>
       </button>
 

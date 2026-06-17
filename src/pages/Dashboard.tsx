@@ -7,7 +7,7 @@ import { PageTransition } from "@/components/design/PageTransition";
 import { GlassCard } from "@/components/design/GlassCard";
 import { NeonButton } from "@/components/design/NeonButton";
 import { Stat } from "@/components/design/Stat";
-import { fmtMoney } from "@/lib/money";
+import { fmtCompact } from "@/lib/money";
 
 export function Dashboard() {
   const nav = useNavigate();
@@ -34,12 +34,12 @@ export function Dashboard() {
         </button>
       </header>
 
-      <GlassCard glow="gold" className="mb-6 flex items-center justify-between" hi>
-        <div>
+      <GlassCard glow="gold" className="mb-6 flex items-center justify-between gap-4 overflow-hidden" hi>
+        <div className="min-w-0 flex-1">
           <p className="text-muted text-xs uppercase tracking-wide">{t("dash_classic")}</p>
-          <p className="display text-xl font-bold">{t("dash_tagline")}</p>
+          <p className="display text-xl font-bold break-words">{t("dash_tagline")}</p>
         </div>
-        <NeonButton variant="gold" onClick={() => nav("/game")}>
+        <NeonButton variant="gold" onClick={() => nav("/game")} className="shrink-0">
           <span className="flex items-center gap-2"><Play size={18} /> {t("dash_play")}</span>
         </NeonButton>
       </GlassCard>
@@ -48,25 +48,25 @@ export function Dashboard() {
         {tiles.map((tile, i) => (
           <motion.button key={tile.to} onClick={() => nav(tile.to)}
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
-            <GlassCard glow={tile.glow} className="h-full text-left">
-              <tile.icon size={26} className="text-cyan mb-3" />
-              <p className="display font-semibold">{tile.label}</p>
-              <p className="text-xs text-muted">{tile.sub}</p>
+            <GlassCard glow={tile.glow} className="h-full text-start overflow-hidden">
+              <tile.icon size={26} className="text-cyan mb-3 shrink-0" />
+              <p className="display font-semibold break-words leading-snug">{tile.label}</p>
+              <p className="text-xs text-muted mt-0.5 break-words leading-snug">{tile.sub}</p>
             </GlassCard>
           </motion.button>
         ))}
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        <Stat label={t("dash_bestWin")} value={fmtMoney(p.stats.bestWinnings)} accent />
+        <Stat label={t("dash_bestWin")} value={fmtCompact(p.stats.bestWinnings)} accent />
         <Stat label={t("dash_level")} value={String(p.stats.level)} />
         <Stat label={t("dash_streak")} value={String(p.stats.longestStreak)} />
       </div>
 
       <button onClick={() => nav("/leaderboards")} className="mt-4 w-full">
-        <GlassCard className="flex items-center gap-3">
-          <Trophy className="text-gold" />
-          <span>{t("dash_rankings")}</span>
+        <GlassCard className="flex items-center gap-3 overflow-hidden">
+          <Trophy className="text-gold shrink-0" />
+          <span className="min-w-0 flex-1 break-words text-start">{t("dash_rankings")}</span>
         </GlassCard>
       </button>
     </PageTransition>

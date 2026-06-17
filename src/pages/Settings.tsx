@@ -1,5 +1,7 @@
-import { Check, Play, RotateCcw } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Check, ChevronDown, Play, RotateCcw } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import ReactCountryFlag from "react-country-flag";
 import { useSettingsStore, THEMES } from "@/store";
 import { LOCALES } from "@/lib/i18n";
 import { sfx } from "@/lib/audio";
@@ -21,10 +23,10 @@ function Row({
   label, hint, children,
 }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-4 py-3">
-      <div className="min-w-0">
-        <p className="text-sm leading-none">{label}</p>
-        {hint && <p className="text-xs text-muted mt-1 leading-snug">{hint}</p>}
+    <div className="flex items-center justify-between gap-4 py-3 min-h-[52px]">
+      <div className="min-w-0 flex-1">
+        <p className="text-sm leading-snug">{label}</p>
+        {hint && <p className="text-xs text-muted mt-0.5 leading-snug">{hint}</p>}
       </div>
       <div className="shrink-0">{children}</div>
     </div>
@@ -38,14 +40,14 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
       aria-checked={on}
       onClick={() => onChange(!on)}
       className={cn(
-        "relative h-7 w-12 rounded-full p-1 transition-colors duration-200",
+        "relative h-8 w-14 rounded-full p-1 transition-colors duration-200 shrink-0",
         on ? "bg-cyan" : "bg-white/15",
       )}
     >
       <span
         className={cn(
-          "block h-5 w-5 rounded-full bg-void shadow transition-transform duration-200",
-          on && "translate-x-5",
+          "block h-6 w-6 rounded-full bg-void shadow-md transition-transform duration-200",
+          on ? "ltr:translate-x-6 rtl:-translate-x-6" : "translate-x-0",
         )}
       />
     </button>
@@ -64,10 +66,10 @@ function SliderRow({
 }) {
   return (
     <div className="py-3">
-      <div className="flex items-center justify-between mb-2">
-        <div>
-          <p className="text-sm leading-none">{label}</p>
-          {hint && <p className="text-xs text-muted mt-1">{hint}</p>}
+      <div className="flex items-center justify-between gap-3 mb-2">
+        <div className="min-w-0 flex-1">
+          <p className="text-sm leading-snug">{label}</p>
+          {hint && <p className="text-xs text-muted mt-0.5 leading-snug">{hint}</p>}
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <span className="nums text-xs text-cyan w-10 text-right">{displayValue}</span>
@@ -96,6 +98,88 @@ function SliderRow({
   );
 }
 
+/* ── LangPicker ──────────────────────────────────────────────────────────── */
+
+function LangPicker({ value, onChange }: { value: string; onChange: (code: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const current = LOCALES.find((l) => l.code === value) ?? LOCALES[2];
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      {/* Trigger */}
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-sm active:bg-white/10 transition-colors"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+      >
+        <span className="flex items-center gap-3 min-w-0">
+          <ReactCountryFlag
+            countryCode={current.flag}
+            svg
+            style={{ width: "1.5em", height: "1.5em", borderRadius: "4px", flexShrink: 0 }}
+          />
+          <span className="truncate">{current.label}</span>
+        </span>
+        <ChevronDown
+          size={15}
+          className={cn("text-muted shrink-0 transition-transform duration-200", open && "rotate-180")}
+        />
+      </button>
+
+      {/* Dropdown — rendered above the trigger so it doesn't underlay the Reset button */}
+      {open && (
+        <div
+          role="listbox"
+          className="absolute bottom-full mb-1 inset-x-0 z-50 rounded-xl border border-white/10 shadow-2xl overflow-hidden"
+          style={{
+            background: "linear-gradient(160deg,#1a2240,#111830)",
+            backdropFilter: "blur(20px)",
+            maxHeight: "min(15rem, 50vh)",
+            overflowY: "auto",
+          }}
+        >
+          {LOCALES.map((l) => {
+            const selected = l.code === value;
+            return (
+              <button
+                key={l.code}
+                role="option"
+                aria-selected={selected}
+                onClick={() => { onChange(l.code); setOpen(false); }}
+                className={cn(
+                  "w-full flex items-center gap-3 px-4 py-3 text-sm text-start transition-colors",
+                  selected
+                    ? "bg-white/12 text-ink"
+                    : "text-muted hover:bg-white/8 hover:text-ink active:bg-white/10",
+                )}
+              >
+                <ReactCountryFlag
+                  countryCode={l.flag}
+                  svg
+                  style={{ width: "1.5em", height: "1.5em", borderRadius: "4px", flexShrink: 0 }}
+                />
+                <span className="flex-1">{l.label}</span>
+                {selected && <Check size={12} className="text-cyan shrink-0" />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── helpers ─────────────────────────────────────────────────────────────── */
 
 const pct = (v: number) => (v === 0 ? "Off" : `${Math.round(v * 100)}%`);
@@ -115,7 +199,7 @@ export function Settings() {
 
   return (
     <PageTransition>
-      <div className="px-4 pt-6 pb-28 max-w-lg mx-auto">
+      <div>
         <h1 className="display text-3xl font-bold mb-6">{t("st_title")}</h1>
 
         {/* ── Theme ──────────────────────────────────────────────────────── */}
@@ -230,25 +314,15 @@ export function Settings() {
         {/* ── Language ───────────────────────────────────────────────────── */}
         <GlassCard className="mb-4">
           <SectionTitle>{t("st_language")}</SectionTitle>
-          <select
-            value={s.language}
-            onChange={(e) => s.set("language", e.target.value)}
-            className="glass rounded-xl px-3 py-2.5 text-sm w-full cursor-pointer"
-          >
-            {LOCALES.map((l) => (
-              <option key={l.code} className="bg-deep" value={l.code}>
-                {l.label}
-              </option>
-            ))}
-          </select>
+          <LangPicker value={s.language} onChange={(code) => s.set("language", code)} />
         </GlassCard>
 
         {/* ── Reset ──────────────────────────────────────────────────────── */}
         <button
           onClick={() => s.reset()}
-          className="glass w-full rounded-2xl px-4 py-3 text-sm text-muted hover:text-ink flex items-center justify-center gap-2 hover:neon-cyan transition"
+          className="glass w-full rounded-2xl px-4 py-4 text-sm text-muted hover:text-ink flex items-center justify-center gap-2 hover:neon-cyan transition active:scale-95"
         >
-          <RotateCcw size={13} />
+          <RotateCcw size={14} />
           {t("st_reset")}
         </button>
       </div>

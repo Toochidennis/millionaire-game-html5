@@ -41,21 +41,30 @@ export function Results() {
           <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             className="display text-4xl font-bold text-gold text-glow">{title}</motion.h1>
 
-          <GlassCard glow="gold" hi className="my-6">
-            <p className="text-muted text-xs uppercase tracking-wide">{t("results_winnings")}</p>
-            <motion.p className="nums text-5xl font-bold text-gold"
-              initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }}>
+          <GlassCard glow="gold" hi className="my-6 overflow-hidden">
+            <p className="text-muted text-xs uppercase tracking-widest mb-2">{t("results_winnings")}</p>
+            <motion.p
+              className="nums font-bold text-gold break-all leading-none"
+              style={{ fontSize: "clamp(2rem, 10vw, 3.5rem)" }}
+              initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }}
+            >
               {fmtMoney(amount)}
             </motion.p>
-            <p className="mt-2 text-sm text-muted">{t("results_streak", { count: streak })}</p>
+            <p className="mt-3 text-sm text-muted">{t("results_streak", { count: streak })}</p>
           </GlassCard>
 
-          <div className="flex gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row">
             <NeonButton full variant="ghost" onClick={() => { reset(); nav("/dashboard"); }}>
-              <span className="flex items-center justify-center gap-2"><Home size={18} /> {t("results_home")}</span>
+              <span className="flex items-center justify-center gap-2 min-w-0">
+                <Home size={18} className="shrink-0" />
+                <span className="truncate">{t("results_home")}</span>
+              </span>
             </NeonButton>
             <NeonButton full variant="gold" onClick={() => { reset(); nav("/game"); }}>
-              <span className="flex items-center justify-center gap-2"><RotateCcw size={18} /> {t("results_again")}</span>
+              <span className="flex items-center justify-center gap-2 min-w-0">
+                <RotateCcw size={18} className="shrink-0" />
+                <span className="truncate">{t("results_again")}</span>
+              </span>
             </NeonButton>
           </div>
         </div>

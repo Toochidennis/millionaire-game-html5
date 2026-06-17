@@ -21,3 +21,7 @@ export function safeHavenFloor(rungIndex: number): number {
 
 export const fmtMoney = (n: number) =>
   new Intl.NumberFormat(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
+
+/** Short form for stat chips — $1,000,000 → "$1M", $500,000 → "$500K", $1,000 → "$1K" */
+export const fmtCompact = (n: number) =>
+  new Intl.NumberFormat(undefined, { style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 1 }).format(n);

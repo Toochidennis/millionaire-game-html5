@@ -15,13 +15,13 @@ export function SeasonPass() {
   const currentTier = p?.seasonTier ?? 1;
   return (
     <PageTransition>
-      <GlassCard glow="gold" hi className="mb-5 flex items-center gap-3">
-        <Crown className="text-gold" size={28} />
-        <div>
-          <h1 className="display text-2xl font-bold">{t("season_header")}</h1>
-          <p className="text-xs text-muted">{t("season_daysLeft")}</p>
+      <GlassCard glow="gold" hi className="mb-5 flex items-center gap-3 overflow-hidden">
+        <Crown className="text-gold shrink-0" size={28} />
+        <div className="min-w-0 flex-1">
+          <h1 className="display text-xl font-bold break-words leading-tight">{t("season_header")}</h1>
+          <p className="text-xs text-muted mt-0.5">{t("season_daysLeft")}</p>
         </div>
-        <NeonButton variant="gold" className="ml-auto px-4 py-2 text-sm">{t("season_premium")}</NeonButton>
+        <NeonButton variant="gold" className="ms-auto shrink-0 px-4 py-2 text-sm whitespace-nowrap">{t("season_premium")}</NeonButton>
       </GlassCard>
 
       <div className="flex gap-3 overflow-x-auto pb-3">

@@ -3,20 +3,29 @@ import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import { locales } from "./locales";
 
+/** flag: ISO 3166-1 alpha-2 country code used by react-country-flag */
 export const LOCALES = [
-  { code: "en", label: "English" },   { code: "es", label: "Español" },
-  { code: "fr", label: "Français" },  { code: "de", label: "Deutsch" },
-  { code: "pt", label: "Português" }, { code: "it", label: "Italiano" },
-  { code: "ru", label: "Русский" },   { code: "zh", label: "中文" },
-  { code: "ja", label: "日本語" },    { code: "ko", label: "한국어" },
-  { code: "ar", label: "العربية" },   { code: "hi", label: "हिन्दी" },
-  { code: "tr", label: "Türkçe" },    { code: "id", label: "Indonesia" },
-  { code: "nl", label: "Nederlands" },{ code: "pl", label: "Polski" },
-  { code: "sw", label: "Kiswahili" }, { code: "yo", label: "Yorùbá" },
-  { code: "vi", label: "Tiếng Việt" },{ code: "th", label: "ไทย" },
+  { code: "ar", label: "العربية",    flag: "SA" },
+  { code: "zh", label: "中文",        flag: "CN" },
+  { code: "en", label: "English",    flag: "US" },
+  { code: "fr", label: "Français",   flag: "FR" },
+  { code: "de", label: "Deutsch",    flag: "DE" },
+  { code: "hi", label: "हिन्दी",      flag: "IN" },
+  { code: "id", label: "Indonesia",  flag: "ID" },
+  { code: "ja", label: "日本語",      flag: "JP" },
+  { code: "ko", label: "한국어",      flag: "KR" },
+  { code: "ms", label: "Melayu",     flag: "MY" },
+  { code: "pt", label: "Português",  flag: "BR" },
+  { code: "es", label: "Español",    flag: "MX" },
+  { code: "th", label: "ไทย",        flag: "TH" },
+  { code: "tr", label: "Türkçe",     flag: "TR" },
+  { code: "ur", label: "اردو",       flag: "PK" },
 ] as const;
 
-export const RTL = new Set(["ar", "he", "fa", "ur"]);
+export type LocaleCode = typeof LOCALES[number]["code"];
+
+/** Languages that run right-to-left */
+export const RTL = new Set(["ar", "ur", "he", "fa"]);
 
 i18n
   .use(LanguageDetector)

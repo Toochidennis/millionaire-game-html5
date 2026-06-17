@@ -13,7 +13,7 @@ export function PageTransition({ children }: { children: ReactNode }) {
       variants={variants}
       initial="initial" animate="animate" exit="exit"
       transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-      className="min-h-dvh px-4 pb-28 pt-6 sm:px-8 max-w-6xl mx-auto"
+      className="min-h-dvh px-4 pb-32 pt-6 sm:px-6 max-w-2xl mx-auto w-full"
     >
       {children}
     </motion.main>
