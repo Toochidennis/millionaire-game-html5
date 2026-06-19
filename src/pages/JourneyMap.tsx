@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { motion } from "motion/react";
 import { Lock, Star } from "lucide-react";
 import { useUserStore } from "@/store";
 import { PageTransition } from "@/components/design/PageTransition";
@@ -21,8 +20,7 @@ export function JourneyMap() {
           const unlocked = n.id <= node;
           const current = n.id === node;
           return (
-            <motion.button key={n.id} disabled={!unlocked} onClick={() => nav("/game")}
-              initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}
+            <button key={n.id} disabled={!unlocked} onClick={() => nav("/game")}
               className={cn("relative flex w-full items-center gap-4 py-4", i % 2 ? "flex-row-reverse text-right" : "")}>
               <span className={cn("grid h-14 w-14 shrink-0 place-items-center rounded-2xl",
                 current ? "bg-gradient-to-br from-gold to-gold-deep neon-gold" :
@@ -33,7 +31,7 @@ export function JourneyMap() {
                 <p className="display font-semibold">{n.label}</p>
                 <p className="text-xs text-muted">{unlocked ? t("journey_tapToPlay") : t("journey_locked")}</p>
               </div>
-            </motion.button>
+            </button>
           );
         })}
         <div className="absolute left-1/2 top-0 -z-10 h-full w-0.5 -translate-x-1/2 bg-gradient-to-b from-cyan via-violet to-gold opacity-30" />

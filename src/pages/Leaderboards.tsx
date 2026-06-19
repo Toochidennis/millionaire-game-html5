@@ -1,13 +1,22 @@
 import { useTranslation } from "react-i18next";
-import { motion } from "motion/react";
+import { Trophy, Medal } from "lucide-react";
 import { useLeaderboardStore, useUserStore } from "@/store";
 import type { LeaderboardScope } from "@/types";
 import { PageTransition } from "@/components/design/PageTransition";
 import { GlassCard } from "@/components/design/GlassCard";
 import { fmtMoney } from "@/lib/money";
 import { cn } from "@/lib/cn";
+import { countryInfo } from "@/lib/country";
+import { flagSvg } from "@/data/countries";
 
 const SCOPES: LeaderboardScope[] = ["global", "country", "season", "friends"];
+
+const medal = (i: number) => {
+  if (i === 0) return { icon: Trophy, cls: "text-gold" };
+  if (i === 1) return { icon: Medal, cls: "text-muted" };
+  if (i === 2) return { icon: Medal, cls: "text-gold-deep" };
+  return null;
+};
 
 export function Leaderboards() {
   const { t } = useTranslation();
@@ -29,16 +38,34 @@ export function Leaderboards() {
       </div>
 
       <div className="space-y-2">
-        {data.map((r, i) => (
-          <motion.div key={r.rank} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.02 }}>
-            <GlassCard glow={i < 3 ? "gold" : "none"} className="flex items-center gap-3 py-3">
-              <span className={cn("nums w-8 text-center font-bold", i < 3 ? "text-gold text-glow" : "text-muted")}>{r.rank}</span>
-              <span className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-sm">{r.countryCode}</span>
-              <span className="flex-1 font-medium">{r.name}</span>
-              <span className="nums text-gold font-semibold">{fmtMoney(r.winnings)}</span>
-            </GlassCard>
-          </motion.div>
-        ))}
+        {data.map((r, i) => {
+          const m = medal(i);
+          const info = countryInfo(r.countryCode);
+          return (
+            <div key={r.rank}>
+              <GlassCard glow={i < 3 ? "gold" : "none"} className="flex items-center gap-3 py-3 px-4">
+                {/* Rank */}
+                <span className={cn("nums w-7 text-center font-bold shrink-0", i < 3 ? "text-gold text-glow text-lg" : "text-muted text-sm")}>
+                  {m ? <m.icon size={16} className={cn("mx-auto", m.cls)} /> : r.rank}
+                </span>
+
+                {/* Player info */}
+                <div className="flex-1 min-w-0 flex items-center gap-3">
+                  <img src={flagSvg(r.countryCode)} alt="" className="w-6 h-4 shrink-0 rounded-sm object-cover" />
+                  <div className="min-w-0">
+                    <p className="font-semibold text-sm leading-snug truncate">{r.name}</p>
+                    <p className="text-xs text-muted leading-snug truncate">{info.name}</p>
+                  </div>
+                </div>
+
+                {/* Winnings */}
+                <span className={cn("nums font-bold text-sm shrink-0", i < 3 ? "text-gold text-glow" : "text-gold")}>
+                  {fmtMoney(r.winnings)}
+                </span>
+              </GlassCard>
+            </div>
+          );
+        })}
       </div>
     </PageTransition>
   );

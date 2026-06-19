@@ -11,6 +11,7 @@ import { DailyChallenge } from "@/pages/DailyChallenge";
 import { JourneyMap } from "@/pages/JourneyMap";
 import { Game } from "@/pages/Game";
 import { Results } from "@/pages/Results";
+import { LevelComplete } from "@/pages/LevelComplete";
 import { Achievements } from "@/pages/Achievements";
 import { Settings } from "@/pages/Settings";
 import { SeasonPass } from "@/pages/SeasonPass";
@@ -19,6 +20,8 @@ import { useSettingsStore, THEMES } from "@/store";
 import { setSfxVolume } from "@/lib/audio";
 import { setMusicVolume, onUserGesture } from "@/lib/music";
 import i18n, { RTL } from "@/lib/i18n";
+import { initCountryCache } from "@/lib/countryCache";
+import { initLanguageCache } from "@/lib/languageCache";
 
 /** Syncs Zustand settings → DOM / audio / i18n whenever any setting changes. */
 function SettingsSync() {
@@ -69,6 +72,12 @@ export function App() {
   const reducedMotion = useSettingsStore((s) => s.reducedMotion);
   const musicStarted = useRef(false);
 
+  // Warm API caches on startup — no-op if localStorage already has fresh data
+  useEffect(() => {
+    initCountryCache();
+    initLanguageCache();
+  }, []);
+
   // Start ambient music on first pointer interaction (browser autoplay policy)
   useEffect(() => {
     const handle = () => {
@@ -95,6 +104,7 @@ export function App() {
             <Route path="/journey" element={<JourneyMap />} />
             <Route path="/game" element={<Game />} />
             <Route path="/results" element={<Results />} />
+            <Route path="/level-complete" element={<LevelComplete />} />
             <Route path="/achievements" element={<Achievements />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/season" element={<SeasonPass />} />

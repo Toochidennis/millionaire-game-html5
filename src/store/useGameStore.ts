@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { GameMode, LifelineId, MatchState, Question } from "@/types";
+import type { GameMode, GamePace, LifelineId, MatchState, Question } from "@/types";
 import { LADDER, TOP_RUNG, safeHavenFloor } from "@/lib/money";
 import { buildMatch } from "@/lib/questions";
 import { hostLine } from "@/lib/host";
@@ -9,15 +9,16 @@ import i18n from "@/lib/i18n";
 const QUESTION_TIME = 30;
 
 interface GameStore extends MatchState {
+  bank: Question[];   // full question pool — kept outside MatchState so it's not reset on proceed
   // selectors
   current: () => Question | null;
   winnings: () => number;
   // actions
-  start: (mode: GameMode, bank: Question[]) => void;
+  start: (mode: GameMode, bank: Question[], pace?: GamePace, seenIds?: Set<string>) => void;
   select: (i: number) => void;
   lock: () => void;
   reveal: () => void;
-  proceed: () => void;          // stats -> next question
+  proceed: () => void;
   walkAway: () => void;
   useLifeline: (id: LifelineId, hostVoice: "hype" | "calm" | "witty") => void;
   tick: () => void;
@@ -26,12 +27,13 @@ interface GameStore extends MatchState {
 
 const initial: MatchState = {
   mode: "classic",
+  pace: "classic",
   phase: "idle",
   rungIndex: 0,
   questions: [],
   selected: null,
   locked: null,
-  lifelines: { fiftyFifty: true, askAi: true, crowdVote: true, timeFreeze: true, skip: true },
+  lifelines: { fiftyFifty: true, askAi: true, crowdVote: true, timeFreeze: true, skip: true, resetQuestion: true },
   eliminated: [],
   timeLeft: QUESTION_TIME,
   timeFrozen: false,
@@ -42,6 +44,7 @@ const initial: MatchState = {
 
 export const useGameStore = create<GameStore>((set, get) => ({
   ...initial,
+  bank: [],
 
   current: () => get().questions[get().rungIndex] ?? null,
   winnings: () => {
@@ -52,11 +55,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
     return rungIndex > 0 ? LADDER[rungIndex - 1].amount : 0;
   },
 
-  start: (mode, bank) =>
+  start: (mode, bank, pace = "classic", seenIds = new Set<string>()) =>
     set({
       ...initial,
+      bank,
       mode,
-      questions: buildMatch(bank, LADDER.length),
+      pace,
+      questions: buildMatch(bank, LADDER.length, seenIds),
+      timeLeft: pace === "classic" ? QUESTION_TIME : Infinity,
       phase: "asking",
       startedAt: Date.now(),
     }),
@@ -64,8 +70,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
   select: (i) => {
     const { phase, eliminated } = get();
     if (phase !== "asking" || eliminated.includes(i)) return;
-    sfx.select();
-    set({ selected: i });
+    sfx.lock();
+    set({ selected: i, locked: i, phase: "locked" });
+    setTimeout(() => get().reveal(), 800);
   },
 
   lock: () => {
@@ -73,7 +80,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (phase !== "asking" || selected == null) return;
     sfx.lock();
     set({ locked: selected, phase: "locked" });
-    setTimeout(() => get().reveal(), 1100);
+    setTimeout(() => get().reveal(), 800);
   },
 
   reveal: () => {
@@ -90,7 +97,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   proceed: () => {
-    const { rungIndex } = get();
+    const { rungIndex, pace } = get();
     if (rungIndex >= TOP_RUNG) { sfx.win(); set({ phase: "won" }); return; }
     set({
       rungIndex: rungIndex + 1,
@@ -98,7 +105,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       selected: null,
       locked: null,
       eliminated: [],
-      timeLeft: QUESTION_TIME,
+      timeLeft: pace === "classic" ? QUESTION_TIME : Infinity,
       timeFrozen: false,
       hostMessage: null,
     });
@@ -107,7 +114,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   walkAway: () => set({ phase: "walked" }),
 
   useLifeline: (id, hostVoice) => {
-    const { lifelines, current, phase } = get();
+    const { lifelines, current, phase, bank, questions, rungIndex } = get();
     const q = current();
     if (!q || !lifelines[id] || phase !== "asking") return;
     const next = { ...lifelines, [id]: false };
@@ -132,15 +139,27 @@ export const useGameStore = create<GameStore>((set, get) => ({
       case "crowdVote":
         set({ hostMessage: i18n.t("game_host_crowd"), lifelines: next });
         break;
+      case "resetQuestion": {
+        const targetLevel = rungIndex + 1;
+        const pool = bank.filter((b) => b.level === targetLevel && b.id !== q.id);
+        const fallback = pool.length ? pool : bank.filter((b) => b.id !== q.id);
+        if (!fallback.length) break;
+        const replacement = fallback[Math.floor(Math.random() * fallback.length)];
+        const newQuestions = [...questions];
+        newQuestions[rungIndex] = replacement;
+        // intentionally NOT consuming this lifeline — reusable every question
+        set({ questions: newQuestions, selected: null, locked: null, eliminated: [] });
+        break;
+      }
     }
   },
 
   tick: () => {
-    const { phase, timeLeft, timeFrozen } = get();
-    if (phase !== "asking" || timeFrozen) return;
+    const { phase, pace, timeLeft, timeFrozen } = get();
+    if (phase !== "asking" || timeFrozen || pace === "chill") return;
     if (timeLeft <= 1) { set({ timeLeft: 0, phase: "lost" }); return; }
     set({ timeLeft: timeLeft - 1 });
   },
 
-  reset: () => set({ ...initial }),
+  reset: () => set({ ...initial, bank: [] }),
 }));

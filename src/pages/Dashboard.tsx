@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { motion } from "motion/react";
 import { Play, Swords, CalendarDays, Map, Trophy, Crown, Settings as Cog } from "lucide-react";
 import { useUserStore } from "@/store";
+import { useSettingsStore } from "@/store/useSettingsStore";
 import { PageTransition } from "@/components/design/PageTransition";
 import { GlassCard } from "@/components/design/GlassCard";
 import { NeonButton } from "@/components/design/NeonButton";
@@ -12,7 +12,8 @@ import { fmtCompact } from "@/lib/money";
 export function Dashboard() {
   const nav = useNavigate();
   const { t } = useTranslation();
-  const p = useUserStore((s) => s.profile);
+  const p    = useUserStore((s) => s.profile);
+  const pace = useSettingsStore((s) => s.pace);
   if (!p) { nav("/login"); return null; }
 
   const tiles = [
@@ -23,8 +24,8 @@ export function Dashboard() {
   ];
 
   return (
-    <PageTransition>
-      <header className="flex items-center justify-between mb-6">
+    <PageTransition className="h-dvh flex flex-col px-4 pt-6 pb-24 sm:px-6 max-w-2xl mx-auto w-full">
+      <header className="shrink-0 flex items-center justify-between mb-4">
         <div>
           <p className="text-muted text-sm">{t("dash_welcome")}</p>
           <h1 className="display text-3xl font-bold">{p.name}</h1>
@@ -34,9 +35,11 @@ export function Dashboard() {
         </button>
       </header>
 
-      <GlassCard glow="gold" className="mb-6 flex items-center justify-between gap-4 overflow-hidden" hi>
+      <GlassCard glow="gold" className="shrink-0 mb-4 flex items-center justify-between gap-4 overflow-hidden" hi>
         <div className="min-w-0 flex-1">
-          <p className="text-muted text-xs uppercase tracking-wide">{t("dash_classic")}</p>
+          <p className="text-muted text-xs uppercase tracking-wide">
+            {pace === "chill" ? t("st_chill") : t("st_classic")} · {pace === "chill" ? t("st_chill_hint") : t("st_classic_hint")}
+          </p>
           <p className="display text-xl font-bold break-words">{t("dash_tagline")}</p>
         </div>
         <NeonButton variant="gold" onClick={() => nav("/game")} className="shrink-0">
@@ -44,26 +47,25 @@ export function Dashboard() {
         </NeonButton>
       </GlassCard>
 
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        {tiles.map((tile, i) => (
-          <motion.button key={tile.to} onClick={() => nav(tile.to)}
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
+      <div className="flex-1 min-h-0 grid grid-cols-2 grid-rows-2 gap-3 mb-4">
+        {tiles.map((tile) => (
+          <button key={tile.to} onClick={() => nav(tile.to)} className="h-full">
             <GlassCard glow={tile.glow} className="h-full text-start overflow-hidden">
               <tile.icon size={26} className="text-cyan mb-3 shrink-0" />
               <p className="display font-semibold break-words leading-snug">{tile.label}</p>
               <p className="text-xs text-muted mt-0.5 break-words leading-snug">{tile.sub}</p>
             </GlassCard>
-          </motion.button>
+          </button>
         ))}
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
-        <Stat label={t("dash_bestWin")} value={fmtCompact(p.stats.bestWinnings)} accent />
+      <div className="shrink-0 grid grid-cols-3 gap-3 mb-3">
+        <Stat label={t("stat_wallet")} value={fmtCompact(p.stats.wallet ?? 0)} accent />
         <Stat label={t("dash_level")} value={String(p.stats.level)} />
         <Stat label={t("dash_streak")} value={String(p.stats.longestStreak)} />
       </div>
 
-      <button onClick={() => nav("/leaderboards")} className="mt-4 w-full">
+      <button onClick={() => nav("/leaderboards")} className="shrink-0 w-full">
         <GlassCard className="flex items-center gap-3 overflow-hidden">
           <Trophy className="text-gold shrink-0" />
           <span className="min-w-0 flex-1 break-words text-start">{t("dash_rankings")}</span>

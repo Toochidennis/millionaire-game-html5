@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { motion } from "motion/react";
@@ -13,14 +13,19 @@ export function Results() {
   const nav = useNavigate();
   const { t } = useTranslation();
   const { phase, winnings, streak, reset, rungIndex } = useGameStore();
-  const record = useUserStore((s) => s.recordResult);
-  const won = phase === "won";
+  const record      = useUserStore((s) => s.recordResult);
+  const addToWallet = useUserStore((s) => s.addToWallet);
+
+  const won    = phase === "won";
   const amount = winnings();
 
-  useEffect(() => {
+  const committed = useRef(false);
+  const commit = () => {
+    if (committed.current) return;
+    committed.current = true;
     record(amount, rungIndex, 15, streak, won);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    addToWallet(amount);
+  };
 
   const title = won
     ? t("results_won")
@@ -54,13 +59,13 @@ export function Results() {
           </GlassCard>
 
           <div className="flex flex-col gap-3 sm:flex-row">
-            <NeonButton full variant="ghost" onClick={() => { reset(); nav("/dashboard"); }}>
+            <NeonButton full variant="ghost" onClick={() => { commit(); reset(); nav("/dashboard"); }}>
               <span className="flex items-center justify-center gap-2 min-w-0">
                 <Home size={18} className="shrink-0" />
                 <span className="truncate">{t("results_home")}</span>
               </span>
             </NeonButton>
-            <NeonButton full variant="gold" onClick={() => { reset(); nav("/game"); }}>
+            <NeonButton full variant="gold" onClick={() => { commit(); reset(); nav("/game"); }}>
               <span className="flex items-center justify-center gap-2 min-w-0">
                 <RotateCcw size={18} className="shrink-0" />
                 <span className="truncate">{t("results_again")}</span>

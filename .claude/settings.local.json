@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "PowerShell(code --open-url \"vscode://vscode.simpleBrowser/show?url=http%3A%2F%2Flocalhost%3A5173\")"
+      "PowerShell(code --open-url \"vscode://vscode.simpleBrowser/show?url=http%3A%2F%2Flocalhost%3A5173\")",
+      "Bash(node -e ' *)",
+      "Bash(npx tsc *)",
+      "Bash(curl -s -H \"x-api-key: JMNNKyryPpQsy+bmuELQ3DWngnxFlOobbcgG4nebj0sLjVvxKSAMw/fWTDOsEVkm0ooKYua9VSjudC1L5hG0zg==\" \"https://linkskool.net/api/v4/public/games/questions?language_id=2\")",
+      "Bash(python -c ' *)",
+      "Skill(run)",
+      "Skill(run:*)"
     ]
   }
 }

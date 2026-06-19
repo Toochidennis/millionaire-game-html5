@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, ChevronDown, Play, RotateCcw } from "lucide-react";
+import type { GamePace } from "@/types";
 import { useTranslation } from "react-i18next";
 import ReactCountryFlag from "react-country-flag";
 import { useSettingsStore, THEMES } from "@/store";
@@ -182,7 +183,10 @@ function LangPicker({ value, onChange }: { value: string; onChange: (code: strin
 
 /* ── helpers ─────────────────────────────────────────────────────────────── */
 
-const pct = (v: number) => (v === 0 ? "Off" : `${Math.round(v * 100)}%`);
+const PACES: { id: GamePace; labelKey: string; hintKey: string }[] = [
+  { id: "classic", labelKey: "st_classic", hintKey: "st_classic_hint" },
+  { id: "chill",   labelKey: "st_chill",   hintKey: "st_chill_hint"   },
+];
 
 const TEXT_SIZE_KEYS: Record<number, string> = {
   9: "st_compact", 10: "st_normal", 11: "st_large",
@@ -196,6 +200,7 @@ export function Settings() {
   const s = useSettingsStore();
   const scaleKey = Math.round(s.textScale * 10);
   const textSizeLabel = TEXT_SIZE_KEYS[scaleKey] ? t(TEXT_SIZE_KEYS[scaleKey]) : `${Math.round(s.textScale * 100)}%`;
+  const pct = (v: number) => (v === 0 ? t("st_off") : `${Math.round(v * 100)}%`);
 
   return (
     <PageTransition>
@@ -273,15 +278,44 @@ export function Settings() {
           />
           <Divider />
           <Row label={t("st_host")} hint={t("st_hostHint")}>
-            <select
-              value={s.hostVoice}
-              onChange={(e) => s.set("hostVoice", e.target.value as "hype" | "calm" | "witty")}
-              className="glass rounded-xl px-3 py-1.5 text-sm cursor-pointer"
-            >
-              <option className="bg-deep" value="hype">{t("st_hype")}</option>
-              <option className="bg-deep" value="calm">{t("st_calm")}</option>
-              <option className="bg-deep" value="witty">{t("st_witty")}</option>
-            </select>
+            <div className="flex rounded-xl overflow-hidden border border-white/10">
+              {(["hype", "calm", "witty"] as const).map((v, i) => (
+                <button
+                  key={v}
+                  onClick={() => s.set("hostVoice", v)}
+                  aria-pressed={s.hostVoice === v}
+                  className={cn(
+                    "px-3 py-1.5 text-xs font-semibold transition-colors",
+                    i > 0 && "border-l border-white/10",
+                    s.hostVoice === v ? "bg-cyan/20 text-cyan" : "text-muted hover:text-ink",
+                  )}
+                >
+                  {t(`st_${v}`)}
+                </button>
+              ))}
+            </div>
+          </Row>
+        </GlassCard>
+
+        {/* ── Gameplay ───────────────────────────────────────────────────── */}
+        <GlassCard className="mb-4">
+          <Row label={t("st_gamemode")} hint={t(PACES.find((d) => d.id === s.pace)?.hintKey ?? "")}>
+            <div className="flex rounded-xl overflow-hidden border border-white/10">
+              {PACES.map((d, i) => (
+                <button
+                  key={d.id}
+                  onClick={() => s.set("pace", d.id)}
+                  aria-pressed={s.pace === d.id}
+                  className={cn(
+                    "px-3 py-1.5 text-xs font-semibold transition-colors",
+                    i > 0 && "border-l border-white/10",
+                    s.pace === d.id ? "bg-cyan/20 text-cyan" : "text-muted hover:text-ink",
+                  )}
+                >
+                  {t(d.labelKey)}
+                </button>
+              ))}
+            </div>
           </Row>
         </GlassCard>
 

@@ -9,6 +9,7 @@ export interface Question {
   id: string;
   category: Category;
   difficulty: Difficulty;
+  level?: number;           // API ladder level (1–15); used for buildMatch
   prompt: string;
   /** index 0..3 of the correct answer in `options` */
   options: [string, string, string, string];
@@ -21,7 +22,7 @@ export interface Question {
   i18nKey?: string;
 }
 
-export type LifelineId = "fiftyFifty" | "askAi" | "crowdVote" | "timeFreeze" | "skip";
+export type LifelineId = "fiftyFifty" | "askAi" | "crowdVote" | "timeFreeze" | "skip" | "resetQuestion";
 
 export interface LifelineState {
   id: LifelineId;
@@ -50,6 +51,7 @@ export interface MoneyRung {
 
 export interface MatchState {
   mode: GameMode;
+  pace: GamePace;
   phase: GamePhase;
   rungIndex: number;            // current position on the ladder (0-based)
   questions: Question[];
@@ -67,6 +69,7 @@ export interface MatchState {
 export interface UserStats {
   gamesPlayed: number;
   bestWinnings: number;
+  wallet: number;        // running total: replaced on level win, added to on loss/walk
   totalCorrect: number;
   totalAnswered: number;
   longestStreak: number;
@@ -116,6 +119,9 @@ export interface ThemePreset {
   accentTo: string;
 }
 
+export type GameDifficulty = "easy" | "medium" | "hard"; // kept for question bank compat
+export type GamePace = "classic" | "chill";
+
 export interface Settings {
   themeId: string;
   reducedMotion: boolean;
@@ -126,4 +132,5 @@ export interface Settings {
   hapticsOn: boolean;
   hostVoice: "hype" | "calm" | "witty";
   language: string;
+  pace: GamePace;
 }
