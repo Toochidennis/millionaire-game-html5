@@ -16,7 +16,7 @@ import { Achievements } from "@/pages/Achievements";
 import { Settings } from "@/pages/Settings";
 import { SeasonPass } from "@/pages/SeasonPass";
 import { MultiplayerLobby } from "@/pages/MultiplayerLobby";
-import { useSettingsStore, THEMES } from "@/store";
+import { useSettingsStore, useUserStore, THEMES } from "@/store";
 import { setSfxVolume } from "@/lib/audio";
 import { setMusicVolume, onUserGesture } from "@/lib/music";
 import i18n, { RTL } from "@/lib/i18n";
@@ -58,11 +58,12 @@ function SettingsSync() {
     document.documentElement.style.fontSize = `${textScale * 100}%`;
   }, [textScale]);
 
-  // Language + RTL direction
+  // Language + RTL direction; keep the active profile's locale in sync
   useEffect(() => {
     i18n.changeLanguage(language);
     document.documentElement.lang = language;
     document.documentElement.dir = RTL.has(language) ? "rtl" : "ltr";
+    useUserStore.getState().setLocale(language);
   }, [language]);
 
   return null;

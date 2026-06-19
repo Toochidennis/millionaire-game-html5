@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Award, LogOut, Check, RefreshCw } from "lucide-react";
+import { Award, LogOut, Check, RefreshCw, Settings as Cog } from "lucide-react";
 import { User } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useUserStore } from "@/store";
@@ -52,6 +52,12 @@ export function Profile() {
 
   return (
     <PageTransition>
+      <header className="flex items-center justify-end mb-4">
+        <button onClick={() => nav("/settings")} className="glass rounded-full p-3" aria-label={t("st_title")}>
+          <Cog size={20} className="text-cyan" />
+        </button>
+      </header>
+
       {/* Profile header */}
       <GlassCard glow="violet" hi className="flex items-center gap-4 mb-6 overflow-hidden">
         <button

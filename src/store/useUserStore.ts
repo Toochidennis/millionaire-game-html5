@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Achievement, UserProfile } from "@/types";
+import { useSettingsStore } from "./useSettingsStore";
 
 const ACHIEVEMENTS: Achievement[] = [
   { id: "first_win", title: "First Blood", description: "Win your first match", icon: "Sparkles", unlocked: false, progress: 0, rarity: "common" },
@@ -12,7 +13,7 @@ const ACHIEVEMENTS: Achievement[] = [
 function guest(): UserProfile {
   return {
     id: crypto.randomUUID(), guest: true, name: "Guest Player",
-    avatar: "0", countryCode: "NG", locale: "en",
+    avatar: "0", countryCode: "NG", locale: useSettingsStore.getState().language,
     stats: { gamesPlayed: 0, bestWinnings: 0, wallet: 0, totalCorrect: 0, totalAnswered: 0, longestStreak: 0, xp: 0, level: 1, perfectGames: 0 },
     achievements: ACHIEVEMENTS, journeyNode: 1, seasonTier: 1, seasonXp: 0,
   };
@@ -23,6 +24,7 @@ interface UserStore {
   loginGuest: (countryCode?: string) => void;
   loginNamed: (name: string, countryCode: string) => void;
   setAvatar: (avatarId: string) => void;
+  setLocale: (locale: string) => void;
   recordResult: (winnings: number, correct: number, answered: number, streak: number, perfect: boolean) => void;
   setWallet: (amount: number) => void;
   addToWallet: (amount: number) => void;
@@ -39,6 +41,10 @@ export const useUserStore = create<UserStore>()(
       setAvatar: (avatarId) => {
         const p = get().profile; if (!p) return;
         set({ profile: { ...p, avatar: avatarId } });
+      },
+      setLocale: (locale) => {
+        const p = get().profile; if (!p || p.locale === locale) return;
+        set({ profile: { ...p, locale } });
       },
       recordResult: (winnings, correct, answered, streak, perfect) => {
         const p = get().profile; if (!p) return;
