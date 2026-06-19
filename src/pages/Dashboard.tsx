@@ -24,7 +24,7 @@ export function Dashboard() {
   ];
 
   return (
-    <PageTransition className="h-dvh flex flex-col px-4 pt-6 pb-24 sm:px-6 max-w-2xl mx-auto w-full">
+    <PageTransition className="min-h-dvh flex flex-col px-4 pt-6 pb-24 sm:px-6 max-w-2xl mx-auto w-full">
       <header className="shrink-0 flex items-center justify-between mb-4">
         <div>
           <p className="text-muted text-sm">{t("dash_welcome")}</p>

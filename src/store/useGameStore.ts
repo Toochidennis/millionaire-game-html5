@@ -90,14 +90,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const right = locked === q.correct;
     right ? sfx.correct() : sfx.wrong();
     set({ phase: "revealing", streak: right ? get().streak + 1 : 0 });
-    setTimeout(() => {
-      if (!right) { set({ phase: "lost" }); return; }
-      set({ phase: "stats" });
-    }, 1200);
+    setTimeout(() => set({ phase: "stats" }), 1200);
   },
 
   proceed: () => {
-    const { rungIndex, pace } = get();
+    const { rungIndex, pace, locked, questions } = get();
+    const wasCorrect = locked === (questions[rungIndex]?.correct ?? -1);
+    if (!wasCorrect) { set({ phase: "lost" }); return; }
     if (rungIndex >= TOP_RUNG) { sfx.win(); set({ phase: "won" }); return; }
     set({
       rungIndex: rungIndex + 1,
@@ -130,7 +129,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         set({ timeFrozen: true, lifelines: next });
         break;
       case "skip":
-        set({ lifelines: next, selected: q.correct });
+        set({ lifelines: next, selected: q.correct, locked: q.correct });
         get().proceed();
         return;
       case "askAi":
@@ -148,7 +147,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         const newQuestions = [...questions];
         newQuestions[rungIndex] = replacement;
         // intentionally NOT consuming this lifeline — reusable every question
-        set({ questions: newQuestions, selected: null, locked: null, eliminated: [] });
+        set({ questions: newQuestions, selected: null, locked: null, eliminated: [], hostMessage: null });
         break;
       }
     }
