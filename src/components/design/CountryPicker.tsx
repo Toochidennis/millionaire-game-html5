@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { Search, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { getAllCountries, flagSvg, type Country } from "@/data/countries";
-import { initCountryCache } from "@/lib/countryCache";
+import { getAllCountries, initCountryCache, type Country } from "@/lib/countryCache";
 import { cn } from "@/lib/cn";
 
 interface Props {
@@ -72,7 +71,7 @@ export function CountryPicker({ value, onChange }: Props) {
         aria-expanded={open}
       >
         <span className="flex items-center gap-3 min-w-0">
-          <img src={flagSvg(value)} alt="" className="w-6 h-4 shrink-0 rounded-sm object-cover" />
+          <img src={selected?.image ?? ""} alt="" className="w-6 h-4 shrink-0 rounded-sm object-cover" />
           <span className="truncate">{selected?.name ?? value}</span>
         </span>
         <ChevronDown
@@ -138,7 +137,7 @@ export function CountryPicker({ value, onChange }: Props) {
                         : "text-muted hover:bg-white/8 hover:text-ink active:bg-white/10",
                     )}
                   >
-                    <img src={flagSvg(c.code)} alt="" className="w-6 h-4 shrink-0 rounded-sm object-cover" />
+                    <img src={c.image} alt="" className="w-6 h-4 shrink-0 rounded-sm object-cover" />
                     <span className="flex-1 truncate">{c.name}</span>
                   </button>
                 );

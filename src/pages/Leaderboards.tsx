@@ -7,7 +7,6 @@ import { GlassCard } from "@/components/design/GlassCard";
 import { fmtMoney } from "@/lib/money";
 import { cn } from "@/lib/cn";
 import { countryInfo } from "@/lib/country";
-import { flagSvg } from "@/data/countries";
 
 const SCOPES: LeaderboardScope[] = ["global", "country", "season", "friends"];
 
@@ -51,7 +50,7 @@ export function Leaderboards() {
 
                 {/* Player info */}
                 <div className="flex-1 min-w-0 flex items-center gap-3">
-                  <img src={flagSvg(r.countryCode)} alt="" className="w-6 h-4 shrink-0 rounded-sm object-cover" />
+                  <img src={info.image} alt="" className="w-6 h-4 shrink-0 rounded-sm object-cover" />
                   <div className="min-w-0">
                     <p className="font-semibold text-sm leading-snug truncate">{r.name}</p>
                     <p className="text-xs text-muted leading-snug truncate">{info.name}</p>

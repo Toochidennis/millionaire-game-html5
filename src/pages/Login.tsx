@@ -29,7 +29,7 @@ export function Login() {
   }, []);
 
   const go = (named: boolean) => {
-    named && name.trim() ? loginNamed(name.trim(), cc) : loginGuest();
+    named && name.trim() ? loginNamed(name.trim(), cc) : loginGuest(cc);
     nav("/dashboard");
   };
 

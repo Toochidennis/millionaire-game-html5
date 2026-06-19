@@ -11,7 +11,6 @@ import { Stat } from "@/components/design/Stat";
 import { NeonButton } from "@/components/design/NeonButton";
 import { fmtMoney } from "@/lib/money";
 import { countryInfo } from "@/lib/country";
-import { flagSvg } from "@/data/countries";
 
 export const AVATAR_OPTIONS: { id: string; from: string; to: string }[] = [
   { id: "0", from: "var(--color-cyan)",    to: "var(--color-violet)" },
@@ -69,7 +68,7 @@ export function Profile() {
         <div className="min-w-0 flex-1">
           <h1 className="display text-2xl font-bold break-words leading-tight">{p.name}</h1>
           <p className="text-muted text-sm break-words mt-0.5">
-            <img src={flagSvg(p.countryCode)} alt="" className="w-5 h-3.5 shrink-0 rounded-sm object-cover inline-block" />
+            <img src={countryInfo(p.countryCode).image} alt="" className="w-5 h-3.5 shrink-0 rounded-sm object-cover inline-block" />
             {" "}{countryInfo(p.countryCode).name} · {t("prof_level", { n: p.stats.level })} · {p.guest ? t("prof_guest") : t("prof_member")}
           </p>
         </div>

@@ -20,7 +20,7 @@ function guest(): UserProfile {
 
 interface UserStore {
   profile: UserProfile | null;
-  loginGuest: () => void;
+  loginGuest: (countryCode?: string) => void;
   loginNamed: (name: string, countryCode: string) => void;
   setAvatar: (avatarId: string) => void;
   recordResult: (winnings: number, correct: number, answered: number, streak: number, perfect: boolean) => void;
@@ -34,7 +34,7 @@ export const useUserStore = create<UserStore>()(
   persist(
     (set, get) => ({
       profile: null,
-      loginGuest: () => set({ profile: guest() }),
+      loginGuest: (countryCode = "NG") => set({ profile: { ...guest(), countryCode } }),
       loginNamed: (name, countryCode) => set({ profile: { ...guest(), guest: false, name, countryCode } }),
       setAvatar: (avatarId) => {
         const p = get().profile; if (!p) return;
