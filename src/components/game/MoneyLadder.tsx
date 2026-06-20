@@ -13,8 +13,8 @@ export function MoneyLadder({ rungIndex }: { rungIndex: number }) {
 
     // Double-rAF: first frame lets React + browser settle layout,
     // second frame reads stable positions after paint.
-    let raf1: number, raf2: number;
-    raf1 = requestAnimationFrame(() => {
+    let raf2: number;
+    const raf1 = requestAnimationFrame(() => {
       raf2 = requestAnimationFrame(() => {
         const cRect = container.getBoundingClientRect();
         const aRect = active.getBoundingClientRect();
