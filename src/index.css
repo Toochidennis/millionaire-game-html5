@@ -55,16 +55,23 @@
 }
 
 @layer components {
-  /* Glassmorphism card */
+  /* Glass surface — opaque dark base + subtle sheen.
+     NOTE: deliberately NO backdrop-filter. It's the heaviest effect to render in
+     WebView (and unsupported by many), which caused both the in-app slowdown and
+     the see-through navbar/modal. An opaque base keeps panels readable and fast. */
   .glass {
-    background: linear-gradient(160deg, #ffffff14, #ffffff05);
+    background:
+      linear-gradient(160deg, #ffffff14, #ffffff05),
+      var(--color-deep);
     border: 1px solid var(--color-line);
     border-radius: var(--radius-glass);
-    backdrop-filter: blur(18px) saturate(140%);
-    -webkit-backdrop-filter: blur(18px) saturate(140%);
     box-shadow: var(--shadow-float), inset 0 1px 0 #ffffff1f;
   }
-  .glass-hi { background: linear-gradient(160deg, #ffffff22, #ffffff08); }
+  .glass-hi {
+    background:
+      linear-gradient(160deg, #ffffff22, #ffffff08),
+      var(--color-deep);
+  }
 
   /* Neon edge lighting — uses CSS vars so they respond to theme changes */
   .neon-cyan   { box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-cyan) 33%, transparent), 0 0 28px -4px color-mix(in srgb, var(--color-cyan) 67%, transparent); }

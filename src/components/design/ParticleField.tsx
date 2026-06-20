@@ -11,7 +11,9 @@ export function ParticleField({ count = 60 }: { count?: number }) {
     const canvas = ref.current!;
     const ctx = canvas.getContext("2d")!;
     let raf = 0;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    // Cap DPR at 1.5: dots are tiny, so the extra pixels (and per-frame clearRect
+    // cost) buy almost no visual gain but hurt WebView fill-rate.
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     const resize = () => {
       canvas.width = innerWidth * dpr; canvas.height = innerHeight * dpr;
       canvas.style.width = innerWidth + "px"; canvas.style.height = innerHeight + "px";
@@ -25,7 +27,13 @@ export function ParticleField({ count = 60 }: { count?: number }) {
       h: Math.random() > 0.5 ? 190 : 280,
     }));
 
-    const loop = () => {
+    // Throttle to ~30fps — slow-drifting dots look identical but cost half the frames.
+    const frameMs = 1000 / 30;
+    let last = 0;
+    const loop = (now: number) => {
+      raf = requestAnimationFrame(loop);
+      if (now - last < frameMs) return;
+      last = now;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       for (const d of dots) {
         d.x += d.vx; d.y += d.vy;
@@ -35,10 +43,21 @@ export function ParticleField({ count = 60 }: { count?: number }) {
         ctx.fillStyle = `hsla(${d.h} 90% 65% / 0.5)`;
         ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2); ctx.fill();
       }
-      raf = requestAnimationFrame(loop);
     };
-    loop();
-    return () => { cancelAnimationFrame(raf); removeEventListener("resize", resize); };
+
+    // Pause the loop while the app is backgrounded (WebView battery/CPU win).
+    const onVisibility = () => {
+      cancelAnimationFrame(raf);
+      if (!document.hidden) { last = 0; raf = requestAnimationFrame(loop); }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
+    raf = requestAnimationFrame(loop);
+    return () => {
+      cancelAnimationFrame(raf);
+      removeEventListener("resize", resize);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, [count, reduced]);
 
   if (reduced) return null;
