@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useTranslation } from "react-i18next";
 import { Crown, Trophy } from "lucide-react";
-import { fmtMoney, LADDER } from "@/lib/money";
+import { fmtMoney } from "@/lib/money";
 import { READY_QUOTE_COUNT } from "@/lib/locales";
 
 interface Props {
@@ -11,14 +11,6 @@ interface Props {
   reducedMotion: boolean;
   onDone: () => void;
 }
-
-const CYAN = [34, 211, 238] as const;
-const GOLD = [255, 209, 102] as const;
-const RUNGS = LADDER.length; // questions to climb to the top prize
-
-/** Linear blend between the cyan and gold accent — used to tint the prize ladder. */
-const ladderTint = (t: number) =>
-  `rgb(${CYAN.map((c, i) => Math.round(c + (GOLD[i] - c) * t)).join(" ")})`;
 
 /** rAF count-up; jumps straight to the target when motion is reduced. */
 function useCountUp(target: number, durationMs: number, animated: boolean) {
@@ -40,8 +32,8 @@ function useCountUp(target: number, durationMs: number, animated: boolean) {
 
 /**
  * Pre-game "Get Ready" interstitial: a level medallion, the prize goal counting
- * up, a prize-ladder climb, a motivational punch line, and an animated
- * 3-2-1-GO countdown. Auto-advances via onDone.
+ * up, a motivational punch line, and an animated 3-2-1-GO countdown.
+ * Auto-advances via onDone.
  */
 export function GetReady({ level, prizeGoal, reducedMotion, onDone }: Props) {
   const { t } = useTranslation();
