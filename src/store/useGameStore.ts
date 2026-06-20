@@ -2,19 +2,35 @@ import { create } from "zustand";
 import type { GameMode, GamePace, LifelineId, MatchState, Question } from "@/types";
 import { LADDER, TOP_RUNG, safeHavenFloor } from "@/lib/money";
 import { buildMatch } from "@/lib/questions";
-import { hostLine } from "@/lib/host";
 import { sfx } from "@/lib/audio";
 import i18n from "@/lib/i18n";
 
 const QUESTION_TIME = 30;
 
+function crowdDist(correct: number): number[] {
+  const correctPct = 45 + Math.floor(Math.random() * 26); // 45–70 %
+  const rest = 100 - correctPct;
+  const a = Math.floor(Math.random() * rest);
+  const b = Math.floor(Math.random() * rest);
+  const [lo, hi] = a < b ? [a, b] : [b, a];
+  const parts = [lo, hi - lo, rest - hi];
+  const pcts = [0, 0, 0, 0];
+  pcts[correct] = correctPct;
+  [0, 1, 2, 3].filter((i) => i !== correct).forEach((idx, j) => { pcts[idx] = parts[j]; });
+  return pcts;
+}
+
 interface GameStore extends MatchState {
   bank: Question[];   // full question pool — kept outside MatchState so it's not reset on proceed
+  // resume intent — set when a lost run is being continued; consumed by start()
+  resumeRung: number | null;
+  resumeExcludeId: string | null;
   // selectors
   current: () => Question | null;
   winnings: () => number;
   // actions
   start: (mode: GameMode, bank: Question[], pace?: GamePace, seenIds?: Set<string>) => void;
+  requestResume: () => void;
   select: (i: number) => void;
   lock: () => void;
   reveal: () => void;
@@ -38,6 +54,7 @@ const initial: MatchState = {
   timeLeft: QUESTION_TIME,
   timeFrozen: false,
   hostMessage: null,
+  crowdVotes: null,
   streak: 0,
   startedAt: 0,
 };
@@ -45,6 +62,8 @@ const initial: MatchState = {
 export const useGameStore = create<GameStore>((set, get) => ({
   ...initial,
   bank: [],
+  resumeRung: null,
+  resumeExcludeId: null,
 
   current: () => get().questions[get().rungIndex] ?? null,
   winnings: () => {
@@ -55,17 +74,39 @@ export const useGameStore = create<GameStore>((set, get) => ({
     return rungIndex > 0 ? LADDER[rungIndex - 1].amount : 0;
   },
 
-  start: (mode, bank, pace = "classic", seenIds = new Set<string>()) =>
+  start: (mode, bank, pace = "classic", seenIds = new Set<string>()) => {
+    // Honor a pending resume: rebuild a fresh match but jump to the failed rung,
+    // excluding the failed question so the resumed rung shows a different one.
+    const { resumeRung, resumeExcludeId } = get();
+    const resuming = resumeRung != null;
+    const seen = new Set(seenIds);
+    if (resuming && resumeExcludeId) seen.add(resumeExcludeId);
     set({
       ...initial,
       bank,
       mode,
       pace,
-      questions: buildMatch(bank, LADDER.length, seenIds),
+      questions: buildMatch(bank, LADDER.length, seen),
+      rungIndex: resuming ? resumeRung : 0,
+      resumeRung: null,
+      resumeExcludeId: null,
       timeLeft: pace === "classic" ? QUESTION_TIME : Infinity,
       phase: "asking",
       startedAt: Date.now(),
-    }),
+    });
+  },
+
+  // Snapshot the current (lost) rung + failed question so the next start() resumes there.
+  // Also neutralize the "lost" phase so the Game screen doesn't bounce back to /results
+  // before the countdown + start() can run.
+  requestResume: () => {
+    const { rungIndex, questions } = get();
+    set({
+      resumeRung: rungIndex,
+      resumeExcludeId: questions[rungIndex]?.id ?? null,
+      phase: "idle",
+    });
+  },
 
   select: (i) => {
     const { phase, eliminated } = get();
@@ -90,7 +131,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const right = locked === q.correct;
     right ? sfx.correct() : sfx.wrong();
     set({ phase: "revealing", streak: right ? get().streak + 1 : 0 });
-    setTimeout(() => set({ phase: "stats" }), 1200);
+    setTimeout(() => set({ phase: "stats" }), 600);
   },
 
   proceed: () => {
@@ -107,12 +148,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
       timeLeft: pace === "classic" ? QUESTION_TIME : Infinity,
       timeFrozen: false,
       hostMessage: null,
+      crowdVotes: null,
     });
   },
 
   walkAway: () => set({ phase: "walked" }),
 
-  useLifeline: (id, hostVoice) => {
+  useLifeline: (id, _hostVoice) => {
     const { lifelines, current, phase, bank, questions, rungIndex } = get();
     const q = current();
     if (!q || !lifelines[id] || phase !== "asking") return;
@@ -133,10 +175,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
         get().proceed();
         return;
       case "askAi":
-        set({ hostMessage: `${hostLine(hostVoice, "intro")} ${i18n.t("game_host_ai", { letter: "ABCD"[q.correct] })}`, lifelines: next });
+        // Host personality (hostLine) intentionally omitted from the bubble — it isn't
+        // localized, so we show only the translated AI suggestion. Personality kept for future use.
+        set({ hostMessage: i18n.t("game_host_ai", { letter: "ABCD"[q.correct] }), lifelines: next });
         break;
       case "crowdVote":
-        set({ hostMessage: i18n.t("game_host_crowd"), lifelines: next });
+        set({ hostMessage: i18n.t("game_host_crowd"), crowdVotes: crowdDist(q.correct), lifelines: next });
         break;
       case "resetQuestion": {
         const targetLevel = rungIndex + 1;
@@ -147,7 +191,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         const newQuestions = [...questions];
         newQuestions[rungIndex] = replacement;
         // intentionally NOT consuming this lifeline — reusable every question
-        set({ questions: newQuestions, selected: null, locked: null, eliminated: [], hostMessage: null });
+        set({ questions: newQuestions, selected: null, locked: null, eliminated: [], hostMessage: null, crowdVotes: null });
         break;
       }
     }
@@ -160,5 +204,5 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set({ timeLeft: timeLeft - 1 });
   },
 
-  reset: () => set({ ...initial, bank: [] }),
+  reset: () => set({ ...initial, bank: [], resumeRung: null, resumeExcludeId: null }),
 }));

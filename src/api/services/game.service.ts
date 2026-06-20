@@ -15,6 +15,12 @@ export interface ApiQuestionsData {
   levels: { level: number; questions: ApiQuestion[] }[];
 }
 
+export interface ApiRank {
+  rank: number;
+  total: number;       // total players in the scope
+  countryCode: string;
+}
+
 export const gameService = {
   async getCountries() {
     const response = await apiRequest(`/games/countries`, { method: "GET" });
@@ -29,6 +35,16 @@ export const gameService = {
   async getQuestions(languageId: number): Promise<ApiQuestionsData> {
     const response = await apiRequest<ApiQuestionsData>(
       `/games/questions?language_id=${languageId}`,
+      { method: "GET" }
+    );
+    return response.data;
+  },
+
+  // Player's country rank. Not yet live on the backend — `getMyRank` in lib/rank.ts
+  // serves mock data until USE_MOCK_RANK is flipped off.
+  async getMyRank(countryCode: string): Promise<ApiRank> {
+    const response = await apiRequest<ApiRank>(
+      `/games/rank?country=${encodeURIComponent(countryCode)}`,
       { method: "GET" }
     );
     return response.data;

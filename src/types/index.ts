@@ -62,6 +62,7 @@ export interface MatchState {
   timeLeft: number;             // seconds
   timeFrozen: boolean;
   hostMessage: string | null;
+  crowdVotes: number[] | null;
   streak: number;
   startedAt: number;
 }
@@ -100,6 +101,7 @@ export interface UserProfile {
   journeyNode: number;     // furthest unlocked journey node
   seasonTier: number;
   seasonXp: number;
+  returning?: boolean;     // false on a fresh account; flipped true after first dashboard view
 }
 
 export interface LeaderboardEntry {

@@ -24,7 +24,7 @@ export function Lifelines({
   const visible = LIST.filter((l) => !(l.classicOnly && pace === "chill"));
 
   return (
-    <div className="flex gap-1.5">
+    <div className="flex gap-2">
       {visible.map(({ id, icon: Icon, key }) => {
         const on = available[id];
         const label = key.startsWith("game_") ? t(key) : key;
@@ -36,12 +36,13 @@ export function Lifelines({
             disabled={!on}
             aria-label={label}
             className={cn(
-              "glass flex-1 flex flex-col items-center gap-0.5 rounded-2xl py-2",
+              "glass flex-1 flex flex-col items-center justify-center gap-0.5 rounded-xl",
+              pace === "classic" ? "h-14" : "h-12",
               on ? "hover:neon-cyan" : "opacity-30"
             )}
           >
             <Icon size={16} className="text-cyan" />
-            <span className="text-[8px] uppercase tracking-wide text-muted leading-none">{label}</span>
+            <span className="text-[9px] uppercase tracking-wide text-muted leading-none text-center">{label}</span>
           </motion.button>
         );
       })}

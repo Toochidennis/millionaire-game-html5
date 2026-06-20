@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { motion } from "motion/react";
-import { Crown, Home, RotateCcw } from "lucide-react";
+import { Crown, Home, RotateCcw, Play } from "lucide-react";
 import { useGameStore, useUserStore } from "@/store";
 import { fmtMoney } from "@/lib/money";
 import { PageTransition } from "@/components/design/PageTransition";
@@ -12,7 +12,7 @@ import { NeonButton } from "@/components/design/NeonButton";
 export function Results() {
   const nav = useNavigate();
   const { t } = useTranslation();
-  const { phase, winnings, streak, reset, rungIndex } = useGameStore();
+  const { phase, winnings, streak, reset, rungIndex, requestResume } = useGameStore();
   const record      = useUserStore((s) => s.recordResult);
   const addToWallet = useUserStore((s) => s.addToWallet);
 
@@ -58,19 +58,31 @@ export function Results() {
             <p className="mt-3 text-sm text-muted">{t("results_streak", { count: streak })}</p>
           </GlassCard>
 
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <NeonButton full variant="ghost" onClick={() => { commit(); reset(); nav("/dashboard"); }}>
-              <span className="flex items-center justify-center gap-2 min-w-0">
-                <Home size={18} className="shrink-0" />
-                <span className="truncate">{t("results_home")}</span>
-              </span>
-            </NeonButton>
-            <NeonButton full variant="gold" onClick={() => { commit(); reset(); nav("/game"); }}>
-              <span className="flex items-center justify-center gap-2 min-w-0">
-                <RotateCcw size={18} className="shrink-0" />
-                <span className="truncate">{t("results_again")}</span>
-              </span>
-            </NeonButton>
+          <div className="flex flex-col gap-3">
+            {/* Resume — only after a failed run; continues the same run at the same rung
+                with a randomized question. Free/unlimited until ads are enabled. */}
+            {phase === "lost" && (
+              <NeonButton full variant="gold" onClick={() => { requestResume(); nav("/game"); }}>
+                <span className="flex items-center justify-center gap-2 min-w-0">
+                  <Play size={18} className="shrink-0" />
+                  <span className="truncate">{t("results_resume")}</span>
+                </span>
+              </NeonButton>
+            )}
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <NeonButton full variant="ghost" onClick={() => { commit(); reset(); nav("/dashboard", { state: { showRank: true } }); }}>
+                <span className="flex items-center justify-center gap-2 min-w-0">
+                  <Home size={18} className="shrink-0" />
+                  <span className="truncate">{t("results_home")}</span>
+                </span>
+              </NeonButton>
+              <NeonButton full variant={phase === "lost" ? "ghost" : "gold"} onClick={() => { commit(); reset(); nav("/game"); }}>
+                <span className="flex items-center justify-center gap-2 min-w-0">
+                  <RotateCcw size={18} className="shrink-0" />
+                  <span className="truncate">{t("results_again")}</span>
+                </span>
+              </NeonButton>
+            </div>
           </div>
         </div>
       </div>

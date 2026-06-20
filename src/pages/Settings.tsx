@@ -218,7 +218,7 @@ export function Settings() {
                   key={theme.id}
                   onClick={() => s.set("themeId", theme.id)}
                   className="flex flex-col items-center gap-1.5 group"
-                  aria-label={`${theme.name} theme`}
+                  aria-label={`${t(`st_theme_${theme.id}`)} ${t("st_theme")}`}
                   aria-pressed={active}
                 >
                   <div
@@ -242,7 +242,7 @@ export function Settings() {
                       active ? "text-ink font-medium" : "text-muted",
                     )}
                   >
-                    {theme.name}
+                    {t(`st_theme_${theme.id}`)}
                   </span>
                 </button>
               );

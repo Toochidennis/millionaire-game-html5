@@ -1,9 +1,9 @@
 import type { Question } from "@/types";
 import { db } from "./db";
 import { gameService, type ApiQuestion } from "@/api/services/game.service";
+import { resolveLanguageId } from "./languageCache";
 
-const QUESTION_TTL  = 24 * 60 * 60 * 1000;
-const LANGUAGE_TTL  =  7 * 24 * 60 * 60 * 1000;
+const QUESTION_TTL = 4 * 24 * 60 * 60 * 1000; // 4 days
 
 const SEED_QUESTIONS: Question[] = [
   { id: "q1", category: "science",       difficulty: "easy",   prompt: "What gas do plants primarily absorb for photosynthesis?",
@@ -64,19 +64,6 @@ function shuffleOptions(q: Question): Question {
   const options = order.map((i) => q.options[i]) as [string, string, string, string];
   const correct = order.indexOf(q.correct) as 0 | 1 | 2 | 3;
   return { ...q, options, correct };
-}
-
-async function resolveLanguageId(code: string): Promise<number | null> {
-  const cached = await db.languageCache.get(1);
-  const stale = !cached || Date.now() - cached.fetchedAt > LANGUAGE_TTL;
-  let languages = cached?.languages ?? [];
-  if (stale) {
-    try {
-      languages = await gameService.getLanguages();
-      await db.languageCache.put({ id: 1, languages, fetchedAt: Date.now() });
-    } catch { /* use stale */ }
-  }
-  return languages.find((l) => l.code === code)?.id ?? null;
 }
 
 export async function loadQuestionBank(languageCode = "en"): Promise<Question[]> {

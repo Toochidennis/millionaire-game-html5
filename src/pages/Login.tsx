@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "motion/react";
 import { User, Zap, Users, Star, Sparkles, ChevronRight } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useUserStore } from "@/store";
+import { useSettingsStore } from "@/store/useSettingsStore";
+import { loadQuestionBank } from "@/lib/questions";
 import { PageTransition } from "@/components/design/PageTransition";
 import { GlassCard } from "@/components/design/GlassCard";
 import { CountryPicker } from "@/components/design/CountryPicker";
@@ -19,6 +21,7 @@ export function Login() {
   const nav = useNavigate();
   const { t } = useTranslation();
   const { loginGuest, loginNamed } = useUserStore();
+  const language = useSettingsStore((s) => s.language);
   const [name, setName] = useState("");
   const [cc, setCc] = useState("NG");
   const [featureIdx, setFeatureIdx] = useState(0);
@@ -30,6 +33,7 @@ export function Login() {
 
   const go = (named: boolean) => {
     named && name.trim() ? loginNamed(name.trim(), cc) : loginGuest(cc);
+    loadQuestionBank(language); // fire-and-forget prefetch — ready by the time user taps Play
     nav("/dashboard");
   };
 
@@ -41,7 +45,7 @@ export function Login() {
       <div className="flex flex-col flex-1 min-h-0">
 
         {/* ── Hero ── */}
-        <div className="relative flex flex-col items-center gap-1 pt-5 pb-3 px-6 text-center shrink-0">
+        <div className="relative flex flex-col items-center gap-1 pt-[calc(1.25rem_+_env(safe-area-inset-top))] pb-3 px-6 text-center shrink-0">
           <motion.span
             className="absolute right-5 top-4 text-2xl font-black select-none pointer-events-none"
             style={{ color: "var(--color-violet)", opacity: 0.4 }}
@@ -143,7 +147,7 @@ export function Login() {
 
         {/* ── Feature bar — cycling ── */}
         <motion.div
-          className="flex flex-col items-center gap-2 px-4 py-3 border-t border-white/5 shrink-0"
+          className="flex flex-col items-center gap-2 px-4 pt-3 pb-[calc(0.75rem_+_env(safe-area-inset-bottom))] border-t border-white/5 shrink-0"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.35 }}

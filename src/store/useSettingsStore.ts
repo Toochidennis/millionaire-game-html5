@@ -24,7 +24,7 @@ function detectLanguage(): string {
 const defaults: Settings = {
   themeId: "aurora", reducedMotion: false, highContrast: false, textScale: 1,
   music: 0.5, sfx: 0.7, hapticsOn: true, hostVoice: "hype", language: detectLanguage(),
-  pace: "classic",
+  pace: "chill",
 };
 
 interface SettingsStore extends Settings {

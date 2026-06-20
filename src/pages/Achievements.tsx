@@ -1,5 +1,8 @@
 import { useTranslation } from "react-i18next";
-import * as Icons from "lucide-react";
+import { Sparkles, Flame, Crown, Globe, Star } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+
+const ACHIEVEMENT_ICONS: Record<string, LucideIcon> = { Sparkles, Flame, Crown, Globe, Star };
 import { useUserStore } from "@/store";
 import { PageTransition } from "@/components/design/PageTransition";
 import { GlassCard } from "@/components/design/GlassCard";
@@ -16,7 +19,7 @@ export function Achievements() {
       <h1 className="display text-3xl font-bold mb-5">{t("ach_title")}</h1>
       <div className="grid gap-3 sm:grid-cols-2">
         {p.achievements.map((a) => {
-          const Icon = (Icons as any)[a.icon] ?? Icons.Star;
+          const Icon = ACHIEVEMENT_ICONS[a.icon] ?? Star;
           return (
             <div key={a.id}>
               <GlassCard glow={rarityGlow[a.rarity]} className={cn("flex items-center gap-4 overflow-hidden", !a.unlocked && "opacity-60")}>

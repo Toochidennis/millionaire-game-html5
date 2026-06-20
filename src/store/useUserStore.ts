@@ -15,7 +15,7 @@ function guest(): UserProfile {
     id: crypto.randomUUID(), guest: true, name: "Guest Player",
     avatar: "0", countryCode: "NG", locale: useSettingsStore.getState().language,
     stats: { gamesPlayed: 0, bestWinnings: 0, wallet: 0, totalCorrect: 0, totalAnswered: 0, longestStreak: 0, xp: 0, level: 1, perfectGames: 0 },
-    achievements: ACHIEVEMENTS, journeyNode: 1, seasonTier: 1, seasonXp: 0,
+    achievements: ACHIEVEMENTS, journeyNode: 1, seasonTier: 1, seasonXp: 0, returning: false,
   };
 }
 
@@ -25,6 +25,7 @@ interface UserStore {
   loginNamed: (name: string, countryCode: string) => void;
   setAvatar: (avatarId: string) => void;
   setLocale: (locale: string) => void;
+  markReturning: () => void;
   recordResult: (winnings: number, correct: number, answered: number, streak: number, perfect: boolean) => void;
   setWallet: (amount: number) => void;
   addToWallet: (amount: number) => void;
@@ -45,6 +46,10 @@ export const useUserStore = create<UserStore>()(
       setLocale: (locale) => {
         const p = get().profile; if (!p || p.locale === locale) return;
         set({ profile: { ...p, locale } });
+      },
+      markReturning: () => {
+        const p = get().profile; if (!p || p.returning) return; // guard: flip once
+        set({ profile: { ...p, returning: true } });
       },
       recordResult: (winnings, correct, answered, streak, perfect) => {
         const p = get().profile; if (!p) return;

@@ -19,7 +19,7 @@ export function NavBar() {
      * regardless of label language/length. RTL is symmetric: both edges are fixed.
      * sm+: reverts to an auto-width centered pill.
      */
-    <nav className="fixed bottom-3 left-2 right-2 z-40 glass glass-hi px-1 py-1.5 rounded-3xl flex sm:left-1/2 sm:right-auto sm:w-auto sm:-translate-x-1/2 sm:px-2 sm:py-2 sm:gap-1">
+    <nav className="fixed bottom-[calc(0.75rem_+_env(safe-area-inset-bottom))] left-2 right-2 z-40 glass glass-hi px-1 py-1.5 rounded-3xl flex sm:left-1/2 sm:right-auto sm:w-auto sm:-translate-x-1/2 sm:px-2 sm:py-2 sm:gap-1">
       {TABS.map(({ to, icon: Icon, key }) => (
         <NavLink
           key={to}
