@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://trivia.linkskool.com/sitemap.xml
